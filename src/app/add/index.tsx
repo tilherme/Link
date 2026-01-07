@@ -7,7 +7,7 @@ import { router } from "expo-router";
 import { Categories } from "@/components/categories";
 import { Input } from "@/components/input";
 import { Button } from "@/components/button";
-
+import { linkStorage } from "@/storage/link-storage";
 import { styles } from "./styles";
 import { colors } from "@/styles/colors";
 
@@ -16,7 +16,8 @@ export default function Add(){
     const [url, setUrl] = useState("")
     const [category, setCategory] = useState("")
 
-    function handleAdd(){
+    async function handleAdd(){
+        try{
         if(!category){
             return Alert.alert("Categoria", 'Selecione a categoria')
         }
@@ -26,8 +27,22 @@ export default function Add(){
         if(!url.trim()){
             return Alert.alert("URL", 'URL é obrigatorio')
         }
+        await linkStorage.save({
+            id: new Date().getTime().toString(),
+            name,
+            url,
+            category
+        })
+        Alert.alert("Sucesso", "Novo link adicionado", [
+            {text:"ok", onPress: ()=> router.back()}
 
-        console.log({category, name, url})
+        ]
+        )
+        const data = await linkStorage.get()
+        } catch (error){
+            Alert.alert("Erro", "não foi possivel realizar essa ação")
+            console.log(error)
+        }
     }
     
 
@@ -44,9 +59,9 @@ export default function Add(){
             </Text>
             <Categories selected={category} onChange={setCategory}/>
             <View style={styles.form}>
-                <Input placeholder="nome" onChangeText={setName}/>
-                <Input placeholder="Url" onChangeText={setUrl}/>
-                <Button title="Enviar" onPress={handleAdd}/>
+                <Input placeholder="nome" autoCapitalize="none" onChangeText={setName}/>
+                <Input placeholder="Url" autoCapitalize="none" onChangeText={setUrl}/>
+                <Button title="Enviar" onPress={handleAdd} />
 
             </View>
         </View>
